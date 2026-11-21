@@ -1,0 +1,2297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tennis Club Inner Ladder & Match Tracker</title>
+<style>
+  :root {
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --text: #0f172a;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --primary: #15803d;
+    --primary-hover: #166534;
+    --primary-light: #dcfce7;
+    --accent: #eab308;
+    --danger: #dc2626;
+    --danger-light: #fee2e2;
+    --blue: #2563eb;
+    --blue-light: #dbeafe;
+    --amber: #d97706;
+    --amber-light: #fef3c7;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+  header {
+    background: linear-gradient(135deg, #064e3b 0%, #15803d 100%);
+    color: white;
+    padding: 1.4rem 1rem 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  .container {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 0 1rem;
+  }
+  .header-top {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+  }
+  h1 {
+    font-size: 1.55rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .subtitle {
+    color: #bbf7d0;
+    font-size: 0.88rem;
+    margin-top: 0.2rem;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.55rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    font-size: 0.88rem;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.15s ease;
+    user-select: none;
+  }
+  .btn-primary { background: var(--accent); color: #0f172a; }
+  .btn-primary:hover { background: #facc15; }
+  .btn-green { background: var(--primary); color: white; }
+  .btn-green:hover { background: var(--primary-hover); }
+  .btn-blue { background: var(--blue); color: white; }
+  .btn-blue:hover { background: #1d4ed8; }
+  .btn-outline { background: white; border-color: var(--border); color: var(--text); }
+  .btn-outline:hover { background: #f1f5f9; }
+  .btn-danger { background: var(--danger-light); color: var(--danger); }
+  .btn-danger:hover { background: #fecaca; }
+  .btn-sm { padding: 0.35rem 0.65rem; font-size: 0.8rem; }
+
+  .tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin-top: 1.2rem;
+  }
+  .tab {
+    padding: 0.65rem 1rem;
+    color: #dcfce7;
+    cursor: pointer;
+    font-weight: 600;
+    border-bottom: 3px solid transparent;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    font-size: 0.92rem;
+  }
+  .tab.active {
+    color: white;
+    border-bottom-color: var(--accent);
+  }
+
+  main { padding: 1.5rem 0 3.5rem; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    margin-bottom: 1.25rem;
+  }
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    align-items: center;
+  }
+  input, select, textarea {
+    padding: 0.55rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    font-size: 0.9rem;
+    background: white;
+    color: var(--text);
+    font-family: inherit;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.15);
+  }
+  .search-input { flex: 1; min-width: 220px; }
+
+  .table-wrap { overflow-x: auto; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+  th {
+    text-align: left;
+    padding: 0.7rem 0.75rem;
+    background: #f1f5f9;
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 0.72rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  tbody tr { cursor: pointer; transition: background 0.1s; }
+  tbody tr:hover { background: #f8fafc; }
+
+  .rank-cell { font-weight: 700; display: flex; align-items: center; gap: 0.45rem; }
+  .rank-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #f1f5f9;
+    font-size: 0.85rem;
+  }
+  .rank-1 { background: #fef08a; color: #854d0e; }
+  .rank-2 { background: #e2e8f0; color: #334155; }
+  .rank-3 { background: #fed7aa; color: #9a3412; }
+
+  .delta {
+    font-size: 0.74rem;
+    font-weight: 700;
+    padding: 0.15rem 0.4rem;
+    border-radius: 0.35rem;
+  }
+  .delta-up { background: var(--primary-light); color: var(--primary); }
+  .delta-down { background: var(--danger-light); color: var(--danger); }
+
+  .wtn-pill {
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-weight: 600;
+    padding: 0.18rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    display: inline-block;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  .form-group label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 0.35rem;
+  }
+  .form-group select, .form-group input, .form-group textarea { width: 100%; }
+
+  .preview-box {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #166534;
+    padding: 0.85rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.88rem;
+    margin-bottom: 1rem;
+  }
+  .preview-box.neutral {
+    background: #f8fafc;
+    border-color: var(--border);
+    color: var(--muted);
+  }
+
+  /* Live Tracker Styles */
+  .tracker-header {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 1rem;
+    background: #0f172a;
+    color: white;
+    padding: 1rem 1.25rem;
+    border-radius: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+  .tracker-player {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .tracker-player.right { text-align: right; align-items: flex-end; }
+  .tracker-p-name { font-size: 1.15rem; font-weight: 700; }
+  .tracker-p-sub { font-size: 0.8rem; color: #94a3b8; }
+  .serve-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid #334155;
+    background: #1e293b;
+    color: #cbd5e1;
+    margin-top: 0.25rem;
+  }
+  .serve-pill.serving {
+    background: var(--accent);
+    color: #0f172a;
+    border-color: var(--accent);
+  }
+
+  .stats-section-title {
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    font-weight: 700;
+    margin: 1.1rem 0 0.5rem;
+    padding-bottom: 0.3rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .stat-counter-row {
+    display: grid;
+    grid-template-columns: 1fr minmax(140px, 200px) 1fr;
+    align-items: center;
+    padding: 0.45rem 0;
+    border-bottom: 1px dashed #f1f5f9;
+    gap: 0.5rem;
+  }
+  .stat-counter-label {
+    text-align: center;
+    font-size: 0.86rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .counter-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .counter-controls.left { justify-content: flex-start; }
+  .counter-controls.right { justify-content: flex-end; }
+  .cnt-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 0.45rem;
+    border: 1px solid var(--border);
+    background: #f8fafc;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .cnt-btn:hover { background: #e2e8f0; }
+  .cnt-btn.plus-a { background: var(--primary-light); color: var(--primary); border-color: #bbf7d0; }
+  .cnt-btn.plus-a:hover { background: #bbf7d0; }
+  .cnt-btn.plus-b { background: var(--blue-light); color: var(--blue); border-color: #bfdbfe; }
+  .cnt-btn.plus-b:hover { background: #bfdbfe; }
+  .cnt-val {
+    min-width: 32px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 1rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .rally-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+  }
+  .rally-box {
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    padding: 0.65rem;
+    text-align: center;
+    background: #f8fafc;
+  }
+  .rally-box-title { font-size: 0.8rem; font-weight: 600; color: var(--muted); margin-bottom: 0.4rem; }
+  .rally-box-controls { display: flex; justify-content: center; align-items: center; gap: 0.6rem; }
+
+  /* Coach 4-Pillar Assessment Styles */
+  .coach-pillars-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+    margin-top: 0.75rem;
+  }
+  .coach-player-card {
+    border: 1px solid var(--border);
+    border-radius: 0.65rem;
+    padding: 1rem;
+    background: #f8fafc;
+  }
+  .coach-player-card h4 {
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.45rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .pillar-row {
+    margin-bottom: 0.7rem;
+  }
+  .pillar-label {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.3rem;
+    display: flex;
+    justify-content: space-between;
+  }
+  .rating-btn-group {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.35rem;
+  }
+  .rate-box {
+    padding: 0.42rem 0.35rem;
+    border-radius: 0.42rem;
+    border: 1px solid var(--border);
+    background: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.12s ease;
+    line-height: 1.25;
+  }
+  .rate-box:hover {
+    border-color: #94a3b8;
+    color: var(--text);
+  }
+  .rate-box.active-needs {
+    background: var(--danger-light);
+    border-color: #f87171;
+    color: var(--danger);
+    font-weight: 700;
+  }
+  .rate-box.active-good {
+    background: var(--amber-light);
+    border-color: #fbbf24;
+    color: #b45309;
+    font-weight: 700;
+  }
+  .rate-box.active-excellent {
+    background: var(--primary-light);
+    border-color: #4ade80;
+    color: var(--primary);
+    font-weight: 700;
+  }
+
+  .rating-pill {
+    display: inline-block;
+    padding: 0.16rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.74rem;
+    font-weight: 700;
+  }
+  .pill-needs { background: var(--danger-light); color: var(--danger); }
+  .pill-good { background: var(--amber-light); color: #b45309; }
+  .pill-excellent { background: var(--primary-light); color: var(--primary); }
+  .pill-none { background: #f1f5f9; color: var(--muted); }
+
+  /* 8 Ways to Force Errors Styles */
+  .fe-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+    gap: 0.45rem;
+    margin-top: 0.5rem;
+  }
+  .fe-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.48rem 0.6rem;
+    border-radius: 0.45rem;
+    border: 1px solid var(--border);
+    background: white;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.12s ease;
+    text-align: left;
+  }
+  .fe-btn:hover { background: #f1f5f9; border-color: #94a3b8; }
+  .fe-btn.side-a.has-val { background: var(--primary-light); border-color: #4ade80; color: var(--primary); }
+  .fe-btn.side-b.has-val { background: var(--blue-light); border-color: #93c5fd; color: var(--blue); }
+  .fe-count {
+    font-weight: 800;
+    font-size: 0.85rem;
+    padding: 0.08rem 0.42rem;
+    border-radius: 999px;
+    background: #f1f5f9;
+    color: var(--text);
+    min-width: 24px;
+    text-align: center;
+  }
+  .fe-btn.side-a.has-val .fe-count { background: var(--primary); color: white; }
+  .fe-btn.side-b.has-val .fe-count { background: var(--blue); color: white; }
+  .fe-guide-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px dashed var(--border);
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+  .fe-guide-item strong { color: var(--text); }
+
+  /* Coach Sub-Components Observation Styles */
+  .pillar-sub-toggle {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--blue);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+  }
+  .pillar-sub-box {
+    margin-top: 0.4rem;
+    padding: 0.45rem;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 0.42rem;
+  }
+  .pillar-sub-title {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    font-weight: 700;
+    margin-bottom: 0.35rem;
+  }
+  .sub-chip-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
+  .sub-chip {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.22rem 0.48rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: #f8fafc;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.12s ease;
+    user-select: none;
+  }
+  .sub-chip:hover {
+    border-color: #94a3b8;
+    color: var(--text);
+  }
+  .sub-chip.selected-a {
+    background: var(--primary-light);
+    border-color: #4ade80;
+    color: var(--primary);
+    font-weight: 700;
+  }
+  .sub-chip.selected-b {
+    background: var(--blue-light);
+    border-color: #93c5fd;
+    color: var(--blue);
+    font-weight: 700;
+  }
+  .obs-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.12rem 0.42rem;
+    border-radius: 0.3rem;
+    background: #e2e8f0;
+    color: var(--text);
+    margin: 0.15rem 0.2rem 0 0;
+  }
+
+  /* Comparison bars for Match Report & Player Profile */
+  .comp-row { margin-bottom: 0.75rem; }
+  .comp-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.84rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+  }
+  .comp-bar-bg {
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 999px;
+    overflow: hidden;
+    display: flex;
+  }
+  .comp-bar-a { background: var(--primary); height: 100%; transition: width 0.2s; }
+  .comp-bar-b { background: var(--blue); height: 100%; transition: width 0.2s; }
+
+  .match-item {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid var(--border);
+    gap: 0.75rem;
+  }
+  .match-item:last-child { border-bottom: none; }
+  .score-badge {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    background: #f1f5f9;
+    padding: 0.25rem 0.6rem;
+    border-radius: 0.4rem;
+    font-weight: 700;
+    font-size: 0.88rem;
+  }
+
+  /* Modal */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    z-index: 50;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: white;
+    border-radius: 0.75rem;
+    max-width: 760px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 1.5rem;
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.18);
+  }
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--muted);
+    line-height: 1;
+  }
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.55rem;
+    margin-bottom: 1.1rem;
+  }
+  .stat-box {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    padding: 0.6rem 0.5rem;
+    text-align: center;
+  }
+  .stat-val { font-size: 1.1rem; font-weight: 700; color: var(--text); }
+  .stat-lbl { font-size: 0.72rem; color: var(--muted); margin-top: 0.1rem; }
+
+  .sub-tabs {
+    display: flex;
+    gap: 0.5rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+  .sub-tab {
+    padding: 0.45rem 0.85rem;
+    font-size: 0.86rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: var(--muted);
+    border-bottom: 2px solid transparent;
+  }
+  .sub-tab.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <div class="header-top">
+      <div>
+        <h1>🎾 Club Inner Ladder & Coach Tracker</h1>
+        <div class="subtitle">Live match stats, 4-pillar coach evaluations & automatic ladder progression</div>
+      </div>
+      <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="switchTab('tracker')">⏱ Live Match & Coach Tracker</button>
+        <button class="btn btn-outline" onclick="switchTab('record')">+ Quick Result</button>
+      </div>
+    </div>
+    <div class="tabs">
+      <button class="tab active" data-tab="standings" onclick="switchTab('standings')">Standings (74)</button>
+      <button class="tab" data-tab="tracker" onclick="switchTab('tracker')">Live Match & Coach Eval</button>
+      <button class="tab" data-tab="record" onclick="switchTab('record')">Quick Score Entry</button>
+      <button class="tab" data-tab="history" onclick="switchTab('history')">Match History & Reports</button>
+      <button class="tab" data-tab="manage" onclick="switchTab('manage')">Manage & Backup</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <!-- 1. STANDINGS -->
+  <section id="panel-standings" class="panel active">
+    <div class="card" style="background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 100%); border-color: #bbf7d0; margin-bottom: 1rem;">
+      <div style="display:flex; align-items:flex-start; gap:0.75rem;">
+        <div style="font-size:1.35rem; line-height:1.2;">🌱</div>
+        <div>
+          <div style="font-weight:700; font-size:0.95rem; color:#064e3b; margin-bottom:0.2rem;">
+            Development Philosophy for Players &amp; Parents
+          </div>
+          <p style="font-size:0.86rem; color:#1e293b; margin:0;">
+            <strong>Match results don't really matter — long-term improvement is what truly counts.</strong> Practice matches are a laboratory to build technical habits, test tactical patterns, stay composed under pressure, and regularly challenge quality opponents (tracked via <em>Avg Opp WTN</em> below). Focus on daily progress over short-term wins and losses.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="controls">
+        <input type="text" id="searchInput" class="search-input" placeholder="Search player name..." oninput="renderStandings()">
+        <select id="yearFilter" onchange="renderStandings()">
+          <option value="">All Birth Years</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 105px;">Rank</th>
+              <th>Player</th>
+              <th>Year</th>
+              <th>WTN</th>
+              <th title="Average WTN of opponents played (lower WTN = stronger opponent)">Avg Opp WTN</th>
+              <th>W–L</th>
+              <th>1st Serve %</th>
+              <th>Winners / UE</th>
+              <th>Coach Eval</th>
+            </tr>
+          </thead>
+          <tbody id="standingsBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. LIVE MATCH & COACH TRACKER -->
+  <section id="panel-tracker" class="panel">
+    <div class="card" id="trackerSetupCard">
+      <h2 style="font-size:1.2rem; margin-bottom:0.35rem;">Start / Track Match Statistics & Coach Evaluation</h2>
+      <p style="color:var(--muted); font-size:0.88rem; margin-bottom:1rem;">
+        Select the two players below to track point-by-point match stats and click the coach evaluation boxes (<strong>Technical</strong>, <strong>Tactical</strong>, <strong>Mental</strong>, <strong>Physical</strong>) during or after the match.
+      </p>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Player A</label>
+          <select id="livePlayerASelect" onchange="onLivePlayersChange()"></select>
+        </div>
+        <div class="form-group">
+          <label>Player B</label>
+          <select id="livePlayerBSelect" onchange="onLivePlayersChange()"></select>
+        </div>
+        <div class="form-group">
+          <label>Match Date</label>
+          <input type="date" id="liveDateInput" onchange="saveLiveDraft()">
+        </div>
+      </div>
+    </div>
+
+    <div id="trackerActiveArea" style="display:none;">
+      <div class="tracker-header">
+        <div class="tracker-player">
+          <div class="tracker-p-name" id="liveNameA">Player A</div>
+          <div class="tracker-p-sub" id="liveRankA">Rank #1</div>
+          <div>
+            <button type="button" class="serve-pill" id="serveBtnA" onclick="setServer('A')">🎾 Serving</button>
+          </div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.06em; color:#94a3b8;">Total Points Won</div>
+          <div style="font-size:1.6rem; font-weight:800; margin:0.15rem 0;">
+            <span id="liveTotalPtsA" style="color:#4ade80;">0</span> – <span id="liveTotalPtsB" style="color:#60a5fa;">0</span>
+          </div>
+          <button type="button" class="btn btn-sm" style="background:#1e293b; color:#cbd5e1; border:1px solid #334155;" onclick="toggleServer()">⇄ Switch Server</button>
+        </div>
+        <div class="tracker-player right">
+          <div class="tracker-p-name" id="liveNameB">Player B</div>
+          <div class="tracker-p-sub" id="liveRankB">Rank #2</div>
+          <div>
+            <button type="button" class="serve-pill" id="serveBtnB" onclick="setServer('B')">🎾 Serving</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- POINT-BY-POINT STATS -->
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+          <h3 style="font-size:1.05rem;">Point-by-Point Stat Counters</h3>
+          <div style="display:flex; gap:0.5rem;">
+            <button type="button" class="btn btn-outline btn-sm" id="liveUndoBtn" onclick="undoLastStatAction()" disabled>↩ Undo Last Tap</button>
+            <button type="button" class="btn btn-danger btn-sm" onclick="resetLiveTracker()">Clear Match</button>
+          </div>
+        </div>
+
+        <div id="liveCountersContainer"></div>
+
+        <div class="stats-section-title">Rally Length Distribution (Total Rallies in Match)</div>
+        <div class="rally-grid" id="liveRallyContainer"></div>
+      </div>
+
+      <!-- COACH 4-PILLAR THEME EVALUATION -->
+      <div class="card">
+        <h3 style="font-size:1.05rem; margin-bottom:0.25rem;">Coach Performance Themes (Click Box to Rate)</h3>
+        <p style="color:var(--muted); font-size:0.85rem; margin-bottom:0.75rem;">
+          Rate each player across the four development themes: <strong>Needs improvement</strong>, <strong>Good enough for now</strong>, or <strong>Excellent</strong>.
+        </p>
+        <div class="coach-pillars-grid" id="liveCoachEvalContainer"></div>
+      </div>
+
+      <!-- FINISH MATCH -->
+      <div class="card">
+        <h3 style="font-size:1.05rem; margin-bottom:0.75rem;">Finish Match & Update Ladder</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Match Winner</label>
+            <select id="liveWinnerSelect" onchange="updateLiveLadderPreview()"></select>
+          </div>
+          <div class="form-group">
+            <label>Final Set Score</label>
+            <input type="text" id="liveFinalScore" placeholder="e.g. 6-4, 3-6, 10-8">
+          </div>
+        </div>
+        <div id="liveLadderPreview" class="preview-box neutral">Select the match winner to preview ladder movement.</div>
+        <button type="button" class="btn btn-green" onclick="finishLiveMatch()">Save Match, Stats, Coach Eval & Update Ladder</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. QUICK SCORE ENTRY -->
+  <section id="panel-record" class="panel">
+    <div class="card">
+      <h2 style="margin-bottom: 0.35rem; font-size: 1.2rem;">Quick Match Score Entry (Without Detailed Stats)</h2>
+      <p style="color: var(--muted); font-size: 0.88rem; margin-bottom: 1.25rem;">
+        Use this form if you only have the final score. If the winner is ranked below the loser, the winner moves into the loser's spot and everyone in between shifts down one rank.
+      </p>
+      <form onsubmit="submitQuickMatch(event)">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="winnerSelect">Winner (Player A)</label>
+            <select id="winnerSelect" required onchange="updateLadderPreview()"></select>
+          </div>
+          <div class="form-group">
+            <label for="loserSelect">Opponent / Loser (Player B)</label>
+            <select id="loserSelect" required onchange="updateLadderPreview()"></select>
+          </div>
+          <div class="form-group">
+            <label for="scoreInput">Match Score</label>
+            <input type="text" id="scoreInput" placeholder="e.g. 6-4, 7-5" required>
+          </div>
+          <div class="form-group">
+            <label for="dateInput">Match Date</label>
+            <input type="date" id="dateInput" required>
+          </div>
+        </div>
+        <div id="ladderPreview" class="preview-box neutral">Select both players to preview ladder movement.</div>
+        <button type="submit" class="btn btn-green">Save Match & Update Ladder</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- 4. MATCH HISTORY & REPORTS -->
+  <section id="panel-history" class="panel">
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+        <h2 style="font-size: 1.2rem;">Recorded Matches</h2>
+        <button class="btn btn-outline btn-sm" id="undoBtn" onclick="undoLastMatch()">Undo Last Match</button>
+      </div>
+      <div id="historyList"></div>
+    </div>
+  </section>
+
+  <!-- 5. MANAGE & BACKUP -->
+  <section id="panel-manage" class="panel">
+    <div class="card">
+      <h2 style="font-size: 1.2rem; margin-bottom: 1rem;">Add New Player to Bottom of Ladder</h2>
+      <form onsubmit="addPlayer(event)" class="form-grid" style="align-items: end;">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="newPlayerName" placeholder="e.g. Anna Tamm" required>
+        </div>
+        <div class="form-group">
+          <label>Birth Year</label>
+          <input type="number" id="newPlayerYear" placeholder="2012" min="1950" max="2025" required>
+        </div>
+        <div class="form-group">
+          <label>WTN Rating</label>
+          <input type="text" id="newPlayerWtn" placeholder="20,5" required>
+        </div>
+        <div class="form-group">
+          <button type="submit" class="btn btn-green" style="width:100%;">Add Player</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2 style="font-size: 1.2rem; margin-bottom: 0.5rem;">Data Backup & Reset</h2>
+      <p style="color: var(--muted); font-size: 0.88rem; margin-bottom: 1rem;">
+        All standings, match scores, coach theme ratings, and player stat histories are automatically saved in your browser. Export a JSON backup to share or restore on another device.
+      </p>
+      <div style="display:flex; flex-wrap:wrap; gap:0.75rem;">
+        <button class="btn btn-outline" onclick="exportData()">Export JSON Backup</button>
+        <label class="btn btn-outline" style="cursor:pointer;">
+          Import JSON Backup
+          <input type="file" accept=".json" style="display:none;" onchange="importData(event)">
+        </label>
+        <button class="btn btn-danger" onclick="resetLadder()">Reset to Initial 74 Players</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- PLAYER PROFILE & CAREER STATS MODAL -->
+<div class="modal-backdrop" id="playerModal" onclick="if(event.target===this) closeModal('playerModal')">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <h3 id="modalName" style="font-size:1.3rem;"></h3>
+        <div id="modalMeta" style="color:var(--muted); font-size:0.86rem;"></div>
+      </div>
+      <button class="close-btn" onclick="closeModal('playerModal')">&times;</button>
+    </div>
+
+    <div class="stat-grid" id="modalTopStats"></div>
+
+    <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1rem;">
+      <button class="btn btn-primary btn-sm" id="modalTrackLiveBtn">⏱ Track Live Match</button>
+      <button class="btn btn-green btn-sm" id="modalRecordWinBtn">+ Record Win</button>
+      <button class="btn btn-outline btn-sm" id="modalRecordLossBtn">+ Record Loss</button>
+    </div>
+
+    <div class="sub-tabs">
+      <button class="sub-tab active" id="pTabCoach" onclick="switchPlayerModalTab('coach')">Coach Theme History</button>
+      <button class="sub-tab" id="pTabCareer" onclick="switchPlayerModalTab('career')">Match Stats Totals</button>
+      <button class="sub-tab" id="pTabMatches" onclick="switchPlayerModalTab('matches')">Match Log</button>
+    </div>
+
+    <div id="modalCoachPane"></div>
+    <div id="modalCareerPane" style="display:none;"></div>
+    <div id="modalMatchesPane" style="display:none;"></div>
+  </div>
+</div>
+
+<!-- MATCH STATS & COACH REPORT MODAL -->
+<div class="modal-backdrop" id="matchReportModal" onclick="if(event.target===this) closeModal('matchReportModal')">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <h3 id="reportTitle" style="font-size:1.25rem;">Match Statistics & Coach Report</h3>
+        <div id="reportSub" style="color:var(--muted); font-size:0.86rem;"></div>
+      </div>
+      <button class="close-btn" onclick="closeModal('matchReportModal')">&times;</button>
+    </div>
+    <div id="reportBody"></div>
+  </div>
+</div>
+
+<script>
+const INITIAL_PLAYERS = [
+  { id: 1, name: "Ken Ink", year: 2009, wtn: "07,8", initialRank: 1 },
+  { id: 2, name: "Edwin Averjanov", year: 2008, wtn: "08,3", initialRank: 2 },
+  { id: 3, name: "Hugo Narmont", year: 2008, wtn: "11,8", initialRank: 3 },
+  { id: 4, name: "Luukas Raudkivi", year: 2009, wtn: "12,4", initialRank: 4 },
+  { id: 5, name: "Elizaveta Anikina", year: 2012, wtn: "13,1", initialRank: 5 },
+  { id: 6, name: "Egert Trave", year: 2009, wtn: "13,4", initialRank: 6 },
+  { id: 7, name: "Hugo Thor Teiv", year: 2011, wtn: "14,6", initialRank: 7 },
+  { id: 8, name: "Andreas Kuum", year: 2010, wtn: "14,8", initialRank: 8 },
+  { id: 9, name: "Gregor Tillisson", year: 2011, wtn: "15,1", initialRank: 9 },
+  { id: 10, name: "Hans Teiv", year: 2009, wtn: "15,2", initialRank: 10 },
+  { id: 11, name: "Kiira Paskov", year: 2010, wtn: "15,3", initialRank: 11 },
+  { id: 12, name: "Christofer Tüll", year: 2010, wtn: "15,3", initialRank: 12 },
+  { id: 13, name: "Marie Lapimaa", year: 2008, wtn: "16,0", initialRank: 13 },
+  { id: 14, name: "Hugo Vahur", year: 2012, wtn: "16,2", initialRank: 14 },
+  { id: 15, name: "Marius Luuman", year: 2010, wtn: "16,3", initialRank: 15 },
+  { id: 16, name: "Evan Lainurm", year: 2010, wtn: "16,4", initialRank: 16 },
+  { id: 17, name: "Vera Morozova", year: 2012, wtn: "16,8", initialRank: 17 },
+  { id: 18, name: "Aaron Kelle", year: 2008, wtn: "17,1", initialRank: 18 },
+  { id: 19, name: "Nora Maria Adamson", year: 2010, wtn: "17,2", initialRank: 19 },
+  { id: 20, name: "Richard Harjo", year: 2009, wtn: "17,3", initialRank: 20 },
+  { id: 21, name: "Johann Hünerson", year: 2009, wtn: "17,8", initialRank: 21 },
+  { id: 22, name: "Ruudi Sepp", year: 2009, wtn: "17,8", initialRank: 22 },
+  { id: 23, name: "Gerda Reinaru", year: 2003, wtn: "17,9", initialRank: 23 },
+  { id: 24, name: "Eleanora Roos", year: 2009, wtn: "18,7", initialRank: 24 },
+  { id: 25, name: "Elin Kalmus", year: 2011, wtn: "18,7", initialRank: 25 },
+  { id: 26, name: "Kristhor Vähi", year: 2011, wtn: "18,9", initialRank: 26 },
+  { id: 27, name: "Robin Julius Sepp", year: 2012, wtn: "19,1", initialRank: 27 },
+  { id: 28, name: "Adrian Shein", year: 2012, wtn: "19,5", initialRank: 28 },
+  { id: 29, name: "Sofia Traverso", year: 2012, wtn: "20,0", initialRank: 29 },
+  { id: 30, name: "Simona Sepp", year: 2009, wtn: "20,4", initialRank: 30 },
+  { id: 31, name: "Mia Elise Pink", year: 2010, wtn: "20,4", initialRank: 31 },
+  { id: 32, name: "Robert Tamm", year: 2013, wtn: "20,9", initialRank: 32 },
+  { id: 33, name: "Nadja Morozova", year: 2010, wtn: "21,0", initialRank: 33 },
+  { id: 34, name: "Lisette Leppik", year: 2010, wtn: "21,2", initialRank: 34 },
+  { id: 35, name: "Misha Anikin", year: 2014, wtn: "21,3", initialRank: 35 },
+  { id: 36, name: "Roland Puskar", year: 2012, wtn: "21,3", initialRank: 36 },
+  { id: 37, name: "Joanna Toomiste", year: 2013, wtn: "21,3", initialRank: 37 },
+  { id: 38, name: "Elizabeth Averjanov", year: 2010, wtn: "21,5", initialRank: 38 },
+  { id: 39, name: "Tobias Teder", year: 2007, wtn: "21,7", initialRank: 39 },
+  { id: 40, name: "Henry Vanaselja", year: 2013, wtn: "22,0", initialRank: 40 },
+  { id: 41, name: "Robert Kattai", year: 2009, wtn: "22,0", initialRank: 41 },
+  { id: 42, name: "Egert Raag", year: 2010, wtn: "22,4", initialRank: 42 },
+  { id: 43, name: "Mette Jürvetson", year: 2010, wtn: "22,5", initialRank: 43 },
+  { id: 44, name: "Sten Ink", year: 2015, wtn: "22,7", initialRank: 44 },
+  { id: 45, name: "Richard Zoober", year: 2011, wtn: "22,7", initialRank: 45 },
+  { id: 46, name: "Maarit Tammiksaar", year: 2009, wtn: "22,5", initialRank: 46 },
+  { id: 47, name: "Natali Käbi Kaarma", year: 2012, wtn: "23,1", initialRank: 47 },
+  { id: 48, name: "Marta Vellerand", year: 2010, wtn: "23,2", initialRank: 48 },
+  { id: 49, name: "Hõbe Lee Heinlo", year: 2011, wtn: "23,1", initialRank: 49 },
+  { id: 50, name: "Steven Sikk", year: 2013, wtn: "24,4", initialRank: 50 },
+  { id: 51, name: "Lisanna Vähk", year: 2011, wtn: "24,1", initialRank: 51 },
+  { id: 52, name: "Polina Šestakova", year: 2012, wtn: "24,3", initialRank: 52 },
+  { id: 53, name: "Siim Saluste", year: 2014, wtn: "24,6", initialRank: 53 },
+  { id: 54, name: "Ralf Kuldmeri", year: 2011, wtn: "25,0", initialRank: 54 },
+  { id: 55, name: "Lennart Hanni", year: 2013, wtn: "25,1", initialRank: 55 },
+  { id: 56, name: "Rebecca Rahnu", year: 2014, wtn: "25,7", initialRank: 56 },
+  { id: 57, name: "Matu Uba", year: 2014, wtn: "26,9", initialRank: 57 },
+  { id: 58, name: "Ralph Tiits", year: 2011, wtn: "27,2", initialRank: 58 },
+  { id: 59, name: "Sofia Korotõts", year: 2014, wtn: "27,3", initialRank: 59 },
+  { id: 60, name: "Maia Arula", year: 2014, wtn: "29,1", initialRank: 60 },
+  { id: 61, name: "Rebeka Eksi", year: 2014, wtn: "28,5", initialRank: 61 },
+  { id: 62, name: "Andre Kruusimägi", year: 2010, wtn: "29,0", initialRank: 62 },
+  { id: 63, name: "Kendra Kaarma", year: 2016, wtn: "28,6", initialRank: 63 },
+  { id: 64, name: "Karl Tiits", year: 2014, wtn: "29,3", initialRank: 64 },
+  { id: 65, name: "Ryan Williams", year: 2013, wtn: "29,3", initialRank: 65 },
+  { id: 66, name: "Marten Peterson", year: 2013, wtn: "29,6", initialRank: 66 },
+  { id: 67, name: "Victoria Grigorius", year: 2016, wtn: "30,3", initialRank: 67 },
+  { id: 68, name: "Mona Ibrus", year: 2014, wtn: "30,5", initialRank: 68 },
+  { id: 69, name: "Alessandra Grigorius", year: 2016, wtn: "30,9", initialRank: 69 },
+  { id: 70, name: "Nora Maria Heinmets", year: 2015, wtn: "32,5", initialRank: 70 },
+  { id: 71, name: "Mariel Veersalu", year: 2014, wtn: "31,8", initialRank: 71 },
+  { id: 72, name: "Robert Matvejev", year: 2014, wtn: "33,9", initialRank: 72 },
+  { id: 73, name: "Artjom Seiidov", year: 2015, wtn: "34,4", initialRank: 73 },
+  { id: 74, name: "Sofie Soll", year: 2012, wtn: "32,9", initialRank: 74 }
+];
+
+const STAT_GROUPS = [
+  {
+    title: "Serve Statistics",
+    items: [
+      { key: "aces", label: "Aces" },
+      { key: "doubleFaults", label: "Double Faults" },
+      { key: "firstServeIn", label: "1st Serves In" },
+      { key: "firstServeMissed", label: "1st Serves Missed" },
+      { key: "firstServePtsWon", label: "1st Serve Points Won" },
+      { key: "secondServePtsWon", label: "2nd Serve Points Won" }
+    ]
+  },
+  {
+    title: "Shotmaking & Errors",
+    items: [
+      { key: "winners", label: "Winners" },
+      { key: "unforcedErrors", label: "Unforced Errors (UE)" },
+      { key: "forcedErrors", label: "Forced Errors Induced" }
+    ]
+  },
+  {
+    title: "Net & Break Points",
+    items: [
+      { key: "netPointsWon", label: "Net Points Won" },
+      { key: "netPointsLost", label: "Net Points Lost" },
+      { key: "breakPointsWon", label: "Break Points Won" },
+      { key: "breakPointsTotal", label: "Break Point Chances" }
+    ]
+  }
+];
+
+const RALLY_BUCKETS = [
+  { key: "r0_4", label: "0–4 Shots (Short)" },
+  { key: "r5_9", label: "5–9 Shots (Medium)" },
+  { key: "r9plus", label: "9+ Shots (Long)" }
+];
+
+const COACH_THEMES = [
+  {
+    key: "technical",
+    label: "Technical",
+    subPrompt: "High-Performance Technical Observations:",
+    subComponents: [
+      { key: "tech_serve_toss_rhythm", label: "Serve Toss & Rhythm", desc: "Consistent ball toss placement, kinetic chain loading, and trophy position." },
+      { key: "tech_contact_point", label: "Contact Point in Front", desc: "Clean strike zone out in front of the body with balanced weight transfer." },
+      { key: "tech_split_step", label: "Split-Step Timing", desc: "Explosive split-step timed right as the opponent makes ball contact." },
+      { key: "tech_unit_turn", label: "Early Unit Turn & Prep", desc: "Immediate shoulder turn and compact backswing before ball bounces." },
+      { key: "tech_spin_shape", label: "Spin & Net Clearance", desc: "Brush/racquet-head speed control to shape trajectory and margin over net." },
+      { key: "tech_balance_head", label: "Head Stillness & Balance", desc: "Quiet head through contact and dynamic posture recovery after hitting." },
+      { key: "tech_return_compact", label: "Compact Return Swing", desc: "Shortened backswing and forward block/drive on 1st and 2nd serve returns." },
+      { key: "tech_volley_punch", label: "Volley Footwork & Firm Wrist", desc: "Forward step into volley with compact punch and controlled angle." }
+    ]
+  },
+  {
+    key: "tactical",
+    label: "Tactical",
+    subPrompt: "High-Performance Tactical & Pattern Observations:",
+    subComponents: [
+      { key: "tac_serve_plus_one", label: "Serve +1 Pattern", desc: "Executing intentional first-strike forehand/backhand patterns immediately after serve." },
+      { key: "tac_return_target", label: "Return Depth & Target", desc: "Neutralizing server advantage with deep central returns or targeted aggressive returns." },
+      { key: "tac_target_weakness", label: "Attacking Opponent Weakness", desc: "Identifying and repeatedly exploiting the opponent's weaker wing or movement pattern." },
+      { key: "tac_court_geometry", label: "Court Positioning & Angles", desc: "Holding baseline territory, taking the ball early, and opening sharp crosscourt angles." },
+      { key: "tac_transition_net", label: "Transition & Net Closing", desc: "Recognizing short balls to approach behind and finishing points at the net." },
+      { key: "tac_defense_to_offense", label: "Defense-to-Offense Reset", desc: "Using height and heavy depth under pressure to buy recovery time and reset the point." },
+      { key: "tac_shot_selection", label: "High-Percentage Shot Selection", desc: "Choosing the right margin, spin, and target based on court position and rally state." }
+    ]
+  },
+  {
+    key: "mental",
+    label: "Mental",
+    subPrompt: "High-Performance Mental & Competitive Observations:",
+    subComponents: [
+      { key: "men_between_points", label: "Between-Point Routine", desc: "Disciplined 4-stage reset routine (response, relaxation, preparation, ritual) between points." },
+      { key: "men_body_language", label: "Composure & Body Language", desc: "Poised, resilient posture after unforced errors or bad calls without negative outbursts." },
+      { key: "men_big_points", label: "Big-Point Courage (30-30 / BP)", desc: "Trusting aggressive, high-percentage patterns under scoreboard pressure rather than pushing." },
+      { key: "men_present_focus", label: "Present-Point Focus", desc: "Letting go of past games/sets and locking in solely on the current point." },
+      { key: "men_problem_solving", label: "In-Match Problem Solving", desc: "Recognizing why points are won/lost and adjusting tactics mid-set independently." },
+      { key: "men_intensity", label: "Competitive Intensity", desc: "Sustained energy, engagement, and fighting spirit from the first game to match point." }
+    ]
+  },
+  {
+    key: "physical",
+    label: "Physical",
+    subPrompt: "High-Performance Physical & Movement Observations:",
+    subComponents: [
+      { key: "phy_first_step", label: "First-Step Explosiveness", desc: "Quick deceleration out of the split-step and explosive push-off to wide balls." },
+      { key: "phy_recovery_footwork", label: "Recovery Speed & Crossover", desc: "Immediate crossover step and shuffle back to optimal court recovery position." },
+      { key: "phy_open_closed_stance", label: "Stance & Load Efficiency", desc: "Strong lower-body leg drive, hip rotation, and balance on wide open-stance balls." },
+      { key: "phy_endurance", label: "Late-Set Stamina & Footwork", desc: "Maintaining small adjustment steps and leg energy deep into long rallies and 3rd sets." },
+      { key: "phy_core_stability", label: "Core Stability on Stretch", desc: "Maintaining trunk control and clean racquet path when stretched on defense." },
+      { key: "phy_forward_closing", label: "Forward Closing & Transition", desc: "Dynamic forward acceleration when attacking short balls and closing the net." }
+    ]
+  }
+];
+
+const RATING_OPTIONS = [
+  { value: "needs", label: "Needs improvement", short: "Needs impr.", activeClass: "active-needs", pillClass: "pill-needs" },
+  { value: "good", label: "Good enough for now", short: "Good enough", activeClass: "active-good", pillClass: "pill-good" },
+  { value: "excellent", label: "Excellent", short: "Excellent", activeClass: "active-excellent", pillClass: "pill-excellent" }
+];
+
+function createEmptyPlayerStats() {
+  return {
+    aces: 0,
+    doubleFaults: 0,
+    firstServeIn: 0,
+    firstServeMissed: 0,
+    firstServePtsWon: 0,
+    secondServePtsWon: 0,
+    winners: 0,
+    unforcedErrors: 0,
+    forcedErrors: 0,
+    fe_consistency: 0,
+    fe_direction: 0,
+    fe_depth: 0,
+    fe_height: 0,
+    fe_spin: 0,
+    fe_power: 0,
+    fe_courtPosition: 0,
+    fe_time: 0,
+    netPointsWon: 0,
+    netPointsLost: 0,
+    breakPointsWon: 0,
+    breakPointsTotal: 0,
+    pointsWon: 0
+  };
+}
+
+function createEmptyCoachEval() {
+  return {
+    technical: "",
+    tactical: "",
+    mental: "",
+    physical: "",
+    observations: {},
+    note: ""
+  };
+}
+
+function createEmptyLiveDraft() {
+  return {
+    playerAId: "",
+    playerBId: "",
+    date: new Date().toISOString().slice(0, 10),
+    server: "A",
+    statsA: createEmptyPlayerStats(),
+    statsB: createEmptyPlayerStats(),
+    coachA: createEmptyCoachEval(),
+    coachB: createEmptyCoachEval(),
+    rallies: { r0_4: 0, r5_9: 0, r9plus: 0 },
+    historyStack: []
+  };
+}
+
+const STORAGE_KEY = "tennis_club_inner_ladder_v3";
+const LIVE_DRAFT_KEY = "tennis_club_live_draft_v3";
+
+let state = loadState();
+let liveDraft = loadLiveDraft();
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+      || localStorage.getItem("tennis_club_inner_ladder_v2")
+      || localStorage.getItem("tennis_club_inner_ladder_v1");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed.ladder) && Array.isArray(parsed.matches)) {
+        return parsed;
+      }
+    }
+  } catch (e) {}
+  return {
+    ladder: JSON.parse(JSON.stringify(INITIAL_PLAYERS)),
+    matches: []
+  };
+}
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function loadLiveDraft() {
+  try {
+    const raw = localStorage.getItem(LIVE_DRAFT_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.statsA && parsed.statsB && parsed.rallies) {
+        if (!parsed.coachA) parsed.coachA = createEmptyCoachEval();
+        if (!parsed.coachB) parsed.coachB = createEmptyCoachEval();
+        if (!parsed.coachA.observations) parsed.coachA.observations = {};
+        if (!parsed.coachB.observations) parsed.coachB.observations = {};
+        return parsed;
+      }
+    }
+  } catch (e) {}
+  return createEmptyLiveDraft();
+}
+
+function saveLiveDraft() {
+  const dateEl = document.getElementById("liveDateInput");
+  if (dateEl && dateEl.value) liveDraft.date = dateEl.value;
+  localStorage.setItem(LIVE_DRAFT_KEY, JSON.stringify(liveDraft));
+}
+
+function getRatingMeta(val) {
+  return RATING_OPTIONS.find(o => o.value === val) || null;
+}
+
+function renderRatingBadge(val, compact = false) {
+  const meta = getRatingMeta(val);
+  if (!meta) return `<span class="rating-pill pill-none">Not rated</span>`;
+  return `<span class="rating-pill ${meta.pillClass}">${compact ? meta.short : meta.label}</span>`;
+}
+
+function renderObservedTagsForTheme(evalObj, theme) {
+  const obsMap = (evalObj && evalObj.observations) || {};
+  const matched = theme.subComponents.filter(sc => obsMap[sc.key]);
+  if (!matched.length) return '';
+  return `<div style="margin-top:0.25rem;">${matched.map(sc => `<span class="obs-tag" title="${escapeHtml(sc.desc)}">✓ ${escapeHtml(sc.label)}</span>`).join('')}</div>`;
+}
+
+function computeDerivedMetrics(s) {
+  const totalServes = s.firstServeIn + s.firstServeMissed;
+  const firstServePct = totalServes > 0 ? Math.round((s.firstServeIn / totalServes) * 100) : null;
+  const firstServeWinPct = s.firstServeIn > 0 ? Math.round((s.firstServePtsWon / s.firstServeIn) * 100) : null;
+  const secondServesPlayed = Math.max(0, s.firstServeMissed - s.doubleFaults);
+  const secondServeWinPct = secondServesPlayed > 0 ? Math.round((s.secondServePtsWon / secondServesPlayed) * 100) : null;
+  const netTotal = s.netPointsWon + s.netPointsLost;
+  const netWinPct = netTotal > 0 ? Math.round((s.netPointsWon / netTotal) * 100) : null;
+  const bpTotal = Math.max(s.breakPointsTotal, s.breakPointsWon);
+  const bpPct = bpTotal > 0 ? Math.round((s.breakPointsWon / bpTotal) * 100) : null;
+
+  return {
+    totalServes,
+    firstServePct,
+    firstServeWinPct,
+    secondServesPlayed,
+    secondServeWinPct,
+    netTotal,
+    netWinPct,
+    bpTotal,
+    bpPct
+  };
+}
+
+function parseWtnValue(wtnStr) {
+  if (wtnStr === null || wtnStr === undefined) return NaN;
+  const num = parseFloat(String(wtnStr).replace(',', '.').trim());
+  return isNaN(num) ? NaN : num;
+}
+
+function formatWtnValue(num) {
+  if (num === null || num === undefined || isNaN(num)) return null;
+  return num.toFixed(1).replace('.', ',');
+}
+
+function getCareerStats(playerId) {
+  let wins = 0, losses = 0, matchesWithStats = 0;
+  let oppWtnSum = 0, oppWtnCount = 0;
+  const playersById = new Map(state.ladder.map(p => [p.id, p]));
+  const agg = createEmptyPlayerStats();
+  const rallies = { r0_4: 0, r5_9: 0, r9plus: 0 };
+  const coachHistory = [];
+  const coachCounts = {
+    technical: { needs: 0, good: 0, excellent: 0 },
+    tactical: { needs: 0, good: 0, excellent: 0 },
+    mental: { needs: 0, good: 0, excellent: 0 },
+    physical: { needs: 0, good: 0, excellent: 0 }
+  };
+
+  for (const m of state.matches) {
+    const isWinner = m.winnerId === playerId;
+    const isLoser = m.loserId === playerId;
+    if (!isWinner && !isLoser) continue;
+    if (isWinner) wins++;
+    if (isLoser) losses++;
+
+    const oppId = isWinner ? m.loserId : m.winnerId;
+    const oppObj = playersById.get(oppId);
+    if (oppObj) {
+      const oppWtnNum = parseWtnValue(oppObj.wtn);
+      if (!isNaN(oppWtnNum)) {
+        oppWtnSum += oppWtnNum;
+        oppWtnCount++;
+      }
+    }
+
+    if (m.detailedStats) {
+      const pStats = m.detailedStats.byPlayerId[playerId];
+      if (pStats) {
+        matchesWithStats++;
+        for (const k of Object.keys(agg)) {
+          agg[k] += Number(pStats[k] || 0);
+        }
+        if (m.detailedStats.rallies) {
+          rallies.r0_4 += Number(m.detailedStats.rallies.r0_4 || 0);
+          rallies.r5_9 += Number(m.detailedStats.rallies.r5_9 || 0);
+          rallies.r9plus += Number(m.detailedStats.rallies.r9plus || 0);
+        }
+      }
+
+      const cEval = m.detailedStats.coachEvalByPlayerId && m.detailedStats.coachEvalByPlayerId[playerId];
+      const hasObsChips = cEval && cEval.observations && Object.values(cEval.observations).some(Boolean);
+      if (cEval && (cEval.technical || cEval.tactical || cEval.mental || cEval.physical || cEval.note || hasObsChips)) {
+        coachHistory.push({
+          matchId: m.id,
+          date: m.date,
+          opponent: isWinner ? m.loserName : m.winnerName,
+          won: isWinner,
+          score: m.score,
+          eval: cEval
+        });
+        for (const th of COACH_THEMES) {
+          const val = cEval[th.key];
+          if (val && coachCounts[th.key][val] !== undefined) {
+            coachCounts[th.key][val]++;
+          }
+        }
+      }
+    }
+  }
+
+  const avgOppWtnNum = oppWtnCount > 0 ? (oppWtnSum / oppWtnCount) : null;
+  const avgOppWtn = avgOppWtnNum !== null ? formatWtnValue(avgOppWtnNum) : null;
+
+  return {
+    wins,
+    losses,
+    matchesWithStats,
+    oppWtnCount,
+    avgOppWtnNum,
+    avgOppWtn,
+    agg,
+    rallies,
+    coachHistory,
+    coachCounts,
+    derived: computeDerivedMetrics(agg)
+  };
+}
+
+function switchTab(tabName) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabName));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + tabName));
+  if (tabName === 'standings') renderStandings();
+  if (tabName === 'record') populateQuickSelects();
+  if (tabName === 'tracker') initLiveTrackerUI();
+  if (tabName === 'history') renderHistory();
+}
+
+function populateYearFilter() {
+  const select = document.getElementById('yearFilter');
+  const currentVal = select.value;
+  const years = [...new Set(state.ladder.map(p => p.year))].sort((a, b) => a - b);
+  select.innerHTML = '<option value="">All Birth Years</option>' +
+    years.map(y => `<option value="${y}">${y}</option>`).join('');
+  select.value = currentVal;
+}
+
+function renderStandings() {
+  populateYearFilter();
+  document.querySelector('[data-tab="standings"]').textContent = `Standings (${state.ladder.length})`;
+  const query = document.getElementById('searchInput').value.trim().toLowerCase();
+  const yearFilter = document.getElementById('yearFilter').value;
+  const tbody = document.getElementById('standingsBody');
+
+  const rows = state.ladder.map((p, idx) => ({ ...p, rank: idx + 1 }))
+    .filter(p => {
+      if (query && !p.name.toLowerCase().includes(query)) return false;
+      if (yearFilter && String(p.year) !== yearFilter) return false;
+      return true;
+    });
+
+  tbody.innerHTML = rows.map(p => {
+    const career = getCareerStats(p.id);
+    const diff = p.initialRank - p.rank;
+    let deltaHtml = '';
+    if (diff > 0) deltaHtml = `<span class="delta delta-up">+${diff}</span>`;
+    else if (diff < 0) deltaHtml = `<span class="delta delta-down">${diff}</span>`;
+
+    const badgeClass = p.rank <= 3 ? `rank-badge rank-${p.rank}` : 'rank-badge';
+    const playerWtnNum = parseWtnValue(p.wtn);
+    let avgOppWtnHtml = '<span style="color:var(--muted);">—</span>';
+    if (career.avgOppWtn !== null) {
+      const isStrongerOpp = !isNaN(playerWtnNum) && career.avgOppWtnNum <= playerWtnNum;
+      const pillStyle = isStrongerOpp
+        ? 'background:#dcfce7; color:#15803d;'
+        : 'background:#f1f5f9; color:#334155;';
+      avgOppWtnHtml = `<span class="wtn-pill" style="${pillStyle}" title="Based on ${career.oppWtnCount} match${career.oppWtnCount > 1 ? 'es' : ''}">${escapeHtml(career.avgOppWtn)}</span>`;
+    }
+    const serveTxt = career.derived.firstServePct !== null ? `${career.derived.firstServePct}%` : '—';
+    const wUeTxt = career.matchesWithStats > 0 ? `${career.agg.winners} / ${career.agg.unforcedErrors}` : '—';
+    const evalCountTxt = career.coachHistory.length > 0
+      ? `<span class="wtn-pill" style="background:#f0fdf4; color:#15803d;">${career.coachHistory.length} eval${career.coachHistory.length > 1 ? 's' : ''}</span>`
+      : '—';
+
+    return `
+      <tr onclick="openPlayerModal(${p.id})">
+        <td>
+          <div class="rank-cell">
+            <span class="${badgeClass}">${p.rank}</span>
+            ${deltaHtml}
+          </div>
+        </td>
+        <td style="font-weight:600;">${escapeHtml(p.name)}</td>
+        <td>${p.year}</td>
+        <td><span class="wtn-pill">${escapeHtml(p.wtn)}</span></td>
+        <td>${avgOppWtnHtml}</td>
+        <td>${career.wins}W – ${career.losses}L</td>
+        <td>${serveTxt}</td>
+        <td>${wUeTxt}</td>
+        <td>${evalCountTxt}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+/* ================= LIVE MATCH & COACH TRACKER ================= */
+function initLiveTrackerUI() {
+  const selA = document.getElementById('livePlayerASelect');
+  const selB = document.getElementById('livePlayerBSelect');
+  const opts = '<option value="">-- Choose Player --</option>' + state.ladder.map((p, idx) =>
+    `<option value="${p.id}">#${idx + 1} ${escapeHtml(p.name)} (WTN ${escapeHtml(p.wtn)})</option>`
+  ).join('');
+
+  selA.innerHTML = opts;
+  selB.innerHTML = opts;
+  if (liveDraft.playerAId) selA.value = liveDraft.playerAId;
+  if (liveDraft.playerBId) selB.value = liveDraft.playerBId;
+  document.getElementById('liveDateInput').value = liveDraft.date || new Date().toISOString().slice(0, 10);
+
+  renderLiveTrackerBoard();
+}
+
+function onLivePlayersChange() {
+  liveDraft.playerAId = document.getElementById('livePlayerASelect').value;
+  liveDraft.playerBId = document.getElementById('livePlayerBSelect').value;
+  saveLiveDraft();
+  renderLiveTrackerBoard();
+}
+
+function setServer(side) {
+  liveDraft.server = side;
+  saveLiveDraft();
+  renderLiveTrackerBoard();
+}
+
+function toggleServer() {
+  setServer(liveDraft.server === 'A' ? 'B' : 'A');
+}
+
+function setCoachRating(side, themeKey, ratingVal) {
+  const target = side === 'A' ? liveDraft.coachA : liveDraft.coachB;
+  target[themeKey] = target[themeKey] === ratingVal ? "" : ratingVal;
+  saveLiveDraft();
+  renderCoachEvalBoxes();
+}
+
+function toggleCoachSubObs(side, obsKey) {
+  const target = side === 'A' ? liveDraft.coachA : liveDraft.coachB;
+  if (!target.observations) target.observations = {};
+  target.observations[obsKey] = !target.observations[obsKey];
+  saveLiveDraft();
+  renderCoachEvalBoxes();
+}
+
+function updateCoachNote(side, val) {
+  const target = side === 'A' ? liveDraft.coachA : liveDraft.coachB;
+  target.note = val;
+  saveLiveDraft();
+}
+
+function renderCoachEvalBoxes() {
+  const idA = Number(liveDraft.playerAId);
+  const idB = Number(liveDraft.playerBId);
+  const pA = state.ladder.find(p => p.id === idA);
+  const pB = state.ladder.find(p => p.id === idB);
+  if (!pA || !pB) return;
+
+  const container = document.getElementById('liveCoachEvalContainer');
+  const sides = [
+    { side: 'A', player: pA, evalObj: liveDraft.coachA, color: 'var(--primary)' },
+    { side: 'B', player: pB, evalObj: liveDraft.coachB, color: 'var(--blue)' }
+  ];
+
+  container.innerHTML = sides.map(s => {
+    const obsMap = s.evalObj.observations || {};
+    const selChipClass = s.side === 'A' ? 'selected-a' : 'selected-b';
+
+    const pillarsHtml = COACH_THEMES.map(theme => {
+      const currentVal = s.evalObj[theme.key] || "";
+      const buttonsHtml = RATING_OPTIONS.map(opt => {
+        const isActive = currentVal === opt.value;
+        return `
+          <button type="button"
+            class="rate-box ${isActive ? opt.activeClass : ''}"
+            onclick="setCoachRating('${s.side}', '${theme.key}', '${opt.value}')">
+            ${opt.label}
+          </button>
+        `;
+      }).join('');
+
+      const chipsHtml = theme.subComponents.map(sc => {
+        const isSelected = !!obsMap[sc.key];
+        return `
+          <button type="button"
+            class="sub-chip ${isSelected ? selChipClass : ''}"
+            title="${escapeHtml(sc.desc)}"
+            onclick="toggleCoachSubObs('${s.side}', '${sc.key}')">
+            ${isSelected ? '✓ ' : ''}${escapeHtml(sc.label)}
+          </button>
+        `;
+      }).join('');
+
+      return `
+        <div class="pillar-row">
+          <div class="pillar-label">
+            <span>${escapeHtml(theme.label)}</span>
+          </div>
+          <div class="rating-btn-group">
+            ${buttonsHtml}
+          </div>
+          <div class="pillar-sub-box">
+            <div class="pillar-sub-title">${escapeHtml(theme.subPrompt)}</div>
+            <div class="sub-chip-grid">${chipsHtml}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div class="coach-player-card">
+        <h4 style="color:${s.color};">
+          <span>${escapeHtml(s.player.name)}</span>
+          <span style="font-size:0.75rem; color:var(--muted); font-weight:500;">Player ${s.side}</span>
+        </h4>
+        ${pillarsHtml}
+        <div class="form-group" style="margin-top:0.65rem; margin-bottom:0;">
+          <label>Coach Observation / Focus Note (Optional)</label>
+          <textarea rows="2" placeholder="e.g. Great split-step recovery; work on 2nd serve depth..."
+            oninput="updateCoachNote('${s.side}', this.value)">${escapeHtml(s.evalObj.note || '')}</textarea>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderLiveTrackerBoard() {
+  const area = document.getElementById('trackerActiveArea');
+  const idA = Number(liveDraft.playerAId);
+  const idB = Number(liveDraft.playerBId);
+
+  if (!idA || !idB || idA === idB) {
+    area.style.display = 'none';
+    return;
+  }
+
+  const idxA = state.ladder.findIndex(p => p.id === idA);
+  const idxB = state.ladder.findIndex(p => p.id === idB);
+  if (idxA === -1 || idxB === -1) {
+    area.style.display = 'none';
+    return;
+  }
+
+  const pA = state.ladder[idxA];
+  const pB = state.ladder[idxB];
+  area.style.display = 'block';
+
+  document.getElementById('liveNameA').textContent = pA.name;
+  document.getElementById('liveRankA').textContent = `Rank #${idxA + 1} • WTN ${pA.wtn}`;
+  document.getElementById('liveNameB').textContent = pB.name;
+  document.getElementById('liveRankB').textContent = `Rank #${idxB + 1} • WTN ${pB.wtn}`;
+
+  document.getElementById('serveBtnA').classList.toggle('serving', liveDraft.server === 'A');
+  document.getElementById('serveBtnB').classList.toggle('serving', liveDraft.server === 'B');
+
+  document.getElementById('liveTotalPtsA').textContent = liveDraft.statsA.pointsWon;
+  document.getElementById('liveTotalPtsB').textContent = liveDraft.statsB.pointsWon;
+  document.getElementById('liveUndoBtn').disabled = liveDraft.historyStack.length === 0;
+
+  // Render Stat Counters
+  const container = document.getElementById('liveCountersContainer');
+  let html = `
+    <div class="stat-counter-row" style="background:#f8fafc; border-radius:0.4rem; padding:0.5rem;">
+      <div class="counter-controls left">
+        <button type="button" class="cnt-btn" onclick="adjustStat('A','pointsWon',-1)">-</button>
+        <span class="cnt-val">${liveDraft.statsA.pointsWon}</span>
+        <button type="button" class="cnt-btn plus-a" onclick="adjustStat('A','pointsWon',1)">+1 Pt</button>
+      </div>
+      <div class="stat-counter-label">Total Points Won</div>
+      <div class="counter-controls right">
+        <button type="button" class="cnt-btn plus-b" onclick="adjustStat('B','pointsWon',1)">+1 Pt</button>
+        <span class="cnt-val">${liveDraft.statsB.pointsWon}</span>
+        <button type="button" class="cnt-btn" onclick="adjustStat('B','pointsWon',-1)">-</button>
+      </div>
+    </div>
+  `;
+
+  for (const group of STAT_GROUPS) {
+    html += `<div class="stats-section-title">${group.title}</div>`;
+    for (const item of group.items) {
+      const valA = liveDraft.statsA[item.key] || 0;
+      const valB = liveDraft.statsB[item.key] || 0;
+      html += `
+        <div class="stat-counter-row">
+          <div class="counter-controls left">
+            <button type="button" class="cnt-btn" onclick="adjustStat('A','${item.key}',-1)">-</button>
+            <span class="cnt-val">${valA}</span>
+            <button type="button" class="cnt-btn plus-a" onclick="adjustStat('A','${item.key}',1)">+</button>
+          </div>
+          <div class="stat-counter-label">${item.label}</div>
+          <div class="counter-controls right">
+            <button type="button" class="cnt-btn plus-b" onclick="adjustStat('B','${item.key}',1)">+</button>
+            <span class="cnt-val">${valB}</span>
+            <button type="button" class="cnt-btn" onclick="adjustStat('B','${item.key}',-1)">-</button>
+          </div>
+        </div>
+      `;
+    }
+  }
+  container.innerHTML = html;
+
+  // Render Rally Buckets
+  const rallyDiv = document.getElementById('liveRallyContainer');
+  rallyDiv.innerHTML = RALLY_BUCKETS.map(rb => `
+    <div class="rally-box">
+      <div class="rally-box-title">${rb.label}</div>
+      <div class="rally-box-controls">
+        <button type="button" class="cnt-btn" onclick="adjustRally('${rb.key}',-1)">-</button>
+        <span class="cnt-val">${liveDraft.rallies[rb.key] || 0}</span>
+        <button type="button" class="cnt-btn plus-a" onclick="adjustRally('${rb.key}',1)">+</button>
+      </div>
+    </div>
+  `).join('');
+
+  // Render Coach Eval Boxes
+  renderCoachEvalBoxes();
+
+  // Winner dropdown
+  const winSel = document.getElementById('liveWinnerSelect');
+  const prevWin = winSel.value;
+  winSel.innerHTML = `
+    <option value="">-- Select Winner --</option>
+    <option value="${pA.id}">#${idxA + 1} ${escapeHtml(pA.name)}</option>
+    <option value="${pB.id}">#${idxB + 1} ${escapeHtml(pB.name)}</option>
+  `;
+  if (prevWin === String(pA.id) || prevWin === String(pB.id)) {
+    winSel.value = prevWin;
+  }
+  updateLiveLadderPreview();
+}
+
+function adjustStat(side, key, delta) {
+  const target = side === 'A' ? liveDraft.statsA : liveDraft.statsB;
+  const opp = side === 'A' ? liveDraft.statsB : liveDraft.statsA;
+  if (target[key] + delta < 0) return;
+
+  liveDraft.historyStack.push(JSON.stringify({
+    statsA: liveDraft.statsA,
+    statsB: liveDraft.statsB,
+    rallies: liveDraft.rallies
+  }));
+  if (liveDraft.historyStack.length > 60) liveDraft.historyStack.shift();
+
+  target[key] += delta;
+
+  if (delta > 0) {
+    if (key === 'aces') {
+      target.firstServeIn += 1;
+      target.firstServePtsWon += 1;
+      target.pointsWon += 1;
+    } else if (key === 'doubleFaults') {
+      opp.pointsWon += 1;
+    } else if (key === 'firstServePtsWon') {
+      target.pointsWon += 1;
+    } else if (key === 'secondServePtsWon') {
+      target.pointsWon += 1;
+    } else if (key === 'winners') {
+      target.pointsWon += 1;
+    } else if (key === 'unforcedErrors') {
+      opp.pointsWon += 1;
+    } else if (key === 'forcedErrors') {
+      target.pointsWon += 1;
+    } else if (key === 'netPointsWon') {
+      target.pointsWon += 1;
+    } else if (key === 'netPointsLost') {
+      opp.pointsWon += 1;
+    } else if (key === 'breakPointsWon') {
+      target.breakPointsTotal += 1;
+    }
+  }
+
+  saveLiveDraft();
+  renderLiveTrackerBoard();
+}
+
+function adjustRally(key, delta) {
+  if ((liveDraft.rallies[key] || 0) + delta < 0) return;
+  liveDraft.historyStack.push(JSON.stringify({
+    statsA: liveDraft.statsA,
+    statsB: liveDraft.statsB,
+    rallies: liveDraft.rallies
+  }));
+  liveDraft.rallies[key] = (liveDraft.rallies[key] || 0) + delta;
+  saveLiveDraft();
+  renderLiveTrackerBoard();
+}
+
+function undoLastStatAction() {
+  if (!liveDraft.historyStack.length) return;
+  const prev = JSON.parse(liveDraft.historyStack.pop());
+  liveDraft.statsA = prev.statsA;
+  liveDraft.statsB = prev.statsB;
+  liveDraft.rallies = prev.rallies;
+  saveLiveDraft();
+  renderLiveTrackerBoard();
+}
+
+function resetLiveTracker() {
+  if (!confirm('Clear current live match counters and coach ratings?')) return;
+  const pA = liveDraft.playerAId;
+  const pB = liveDraft.playerBId;
+  liveDraft = createEmptyLiveDraft();
+  liveDraft.playerAId = pA;
+  liveDraft.playerBId = pB;
+  saveLiveDraft();
+  renderLiveTrackerBoard();
+}
+
+function updateLiveLadderPreview() {
+  const box = document.getElementById('liveLadderPreview');
+  const wId = Number(document.getElementById('liveWinnerSelect').value);
+  const idA = Number(liveDraft.playerAId);
+  const idB = Number(liveDraft.playerBId);
+
+  if (!wId || !idA || !idB) {
+    box.className = 'preview-box neutral';
+    box.textContent = 'Select the match winner to preview ladder movement.';
+    return;
+  }
+  const lId = wId === idA ? idB : idA;
+  box.innerHTML = buildLadderPreviewHtml(wId, lId, box);
+}
+
+function finishLiveMatch() {
+  const wId = Number(document.getElementById('liveWinnerSelect').value);
+  const idA = Number(liveDraft.playerAId);
+  const idB = Number(liveDraft.playerBId);
+  const score = document.getElementById('liveFinalScore').value.trim();
+  const date = document.getElementById('liveDateInput').value;
+
+  if (!wId) { alert('Please select the match winner.'); return; }
+  if (!score) { alert('Please enter the final set score (e.g. 6-4, 6-3).'); return; }
+
+  const lId = wId === idA ? idB : idA;
+  const detailedStats = {
+    playerAId: idA,
+    playerBId: idB,
+    byPlayerId: {
+      [idA]: JSON.parse(JSON.stringify(liveDraft.statsA)),
+      [idB]: JSON.parse(JSON.stringify(liveDraft.statsB))
+    },
+    coachEvalByPlayerId: {
+      [idA]: JSON.parse(JSON.stringify(liveDraft.coachA)),
+      [idB]: JSON.parse(JSON.stringify(liveDraft.coachB))
+    },
+    rallies: JSON.parse(JSON.stringify(liveDraft.rallies))
+  };
+
+  recordMatchInternal(wId, lId, score, date, detailedStats);
+
+  liveDraft = createEmptyLiveDraft();
+  saveLiveDraft();
+  document.getElementById('liveFinalScore').value = '';
+  switchTab('history');
+}
+
+/* ================= QUICK MATCH & SHARED RECORDING ================= */
+function populateQuickSelects(preselectWinnerId = null, preselectLoserId = null) {
+  const wSel = document.getElementById('winnerSelect');
+  const lSel = document.getElementById('loserSelect');
+  const prevW = preselectWinnerId || wSel.value;
+  const prevL = preselectLoserId || lSel.value;
+
+  const opts = '<option value="">-- Choose Player --</option>' + state.ladder.map((p, idx) =>
+    `<option value="${p.id}">#${idx + 1} ${escapeHtml(p.name)} (WTN ${escapeHtml(p.wtn)})</option>`
+  ).join('');
+
+  wSel.innerHTML = opts;
+  lSel.innerHTML = opts;
+  if (prevW) wSel.value = prevW;
+  if (prevL) lSel.value = prevL;
+  updateLadderPreview();
+}
+
+function buildLadderPreviewHtml(wId, lId, boxEl) {
+  const wIdx = state.ladder.findIndex(p => p.id === wId);
+  const lIdx = state.ladder.findIndex(p => p.id === lId);
+  const winner = state.ladder[wIdx];
+  const loser = state.ladder[lIdx];
+
+  if (wIdx > lIdx) {
+    boxEl.className = 'preview-box';
+    return `<strong>Ladder Jump!</strong> #${wIdx + 1} <strong>${escapeHtml(winner.name)}</strong> moves up to <strong>#${lIdx + 1}</strong> (taking ${escapeHtml(loser.name)}'s spot). Players #${lIdx + 1} to #${wIdx} shift down 1 spot.`;
+  } else {
+    boxEl.className = 'preview-box neutral';
+    return `<strong>No Rank Change:</strong> #${wIdx + 1} ${escapeHtml(winner.name)} is already ranked higher than #${lIdx + 1} ${escapeHtml(loser.name)}. Match score and stats will be recorded.`;
+  }
+}
+
+function updateLadderPreview() {
+  const wId = Number(document.getElementById('winnerSelect').value);
+  const lId = Number(document.getElementById('loserSelect').value);
+  const box = document.getElementById('ladderPreview');
+
+  if (!wId || !lId) {
+    box.className = 'preview-box neutral';
+    box.textContent = 'Select both players to preview ladder movement.';
+    return;
+  }
+  if (wId === lId) {
+    box.className = 'preview-box neutral';
+    box.textContent = 'Please select two different players.';
+    return;
+  }
+  box.innerHTML = buildLadderPreviewHtml(wId, lId, box);
+}
+
+function submitQuickMatch(e) {
+  e.preventDefault();
+  const wId = Number(document.getElementById('winnerSelect').value);
+  const lId = Number(document.getElementById('loserSelect').value);
+  const score = document.getElementById('scoreInput').value.trim();
+  const date = document.getElementById('dateInput').value;
+
+  if (!wId || !lId || wId === lId || !score) return;
+  recordMatchInternal(wId, lId, score, date, null);
+  document.getElementById('scoreInput').value = '';
+  switchTab('standings');
+}
+
+function recordMatchInternal(wId, lId, score, date, detailedStats) {
+  const wIdx = state.ladder.findIndex(p => p.id === wId);
+  const lIdx = state.ladder.findIndex(p => p.id === lId);
+  const winner = state.ladder[wIdx];
+  const loser = state.ladder[lIdx];
+
+  const prevLadderSnapshot = state.ladder.map(p => p.id);
+  let newWinnerRank = wIdx + 1;
+
+  if (wIdx > lIdx) {
+    const [moved] = state.ladder.splice(wIdx, 1);
+    state.ladder.splice(lIdx, 0, moved);
+    newWinnerRank = lIdx + 1;
+  }
+
+  state.matches.unshift({
+    id: Date.now(),
+    date,
+    winnerId: wId,
+    winnerName: winner.name,
+    winnerOldRank: wIdx + 1,
+    winnerNewRank: newWinnerRank,
+    loserId: lId,
+    loserName: loser.name,
+    loserOldRank: lIdx + 1,
+    score,
+    detailedStats,
+    prevLadderSnapshot
+  });
+
+  saveState();
+}
+
+function undoLastMatch() {
+  if (!state.matches.length) return;
+  if (!confirm('Undo the most recent match and restore previous ladder positions?')) return;
+  const last = state.matches.shift();
+  if (last.prevLadderSnapshot) {
+    const byId = new Map(state.ladder.map(p => [p.id, p]));
+    state.ladder = last.prevLadderSnapshot.map(id => byId.get(id)).filter(Boolean);
+  }
+  saveState();
+  renderHistory();
+  renderStandings();
+}
+
+/* ================= MATCH HISTORY & REPORT MODAL ================= */
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  document.getElementById('undoBtn').style.display = state.matches.length ? 'inline-flex' : 'none';
+
+  if (!state.matches.length) {
+    list.innerHTML = '<p style="color:var(--muted);">No matches recorded yet. Use <strong>Live Match & Coach Eval</strong> or <strong>Quick Score Entry</strong> to log a game.</p>';
+    return;
+  }
+
+  list.innerHTML = state.matches.map(m => {
+    const moved = m.winnerOldRank > m.winnerNewRank;
+    const moveText = moved
+      ? `<span class="delta delta-up">#${m.winnerOldRank} → #${m.winnerNewRank}</span>`
+      : `<span style="color:var(--muted); font-size:0.8rem;">Defended #${m.winnerOldRank}</span>`;
+    const statsBtn = m.detailedStats
+      ? `<button class="btn btn-blue btn-sm" onclick="openMatchReport(${m.id})">📊 Stats & Coach Eval</button>`
+      : `<span style="font-size:0.78rem; color:var(--muted);">Score only</span>`;
+
+    return `
+      <div class="match-item">
+        <div>
+          <div style="font-weight:600;">
+            ${escapeHtml(m.winnerName)} <span style="color:var(--muted); font-weight:400;">def.</span> ${escapeHtml(m.loserName)} (#${m.loserOldRank})
+          </div>
+          <div style="font-size:0.82rem; color:var(--muted); margin-top:0.2rem;">
+            ${escapeHtml(m.date)} &bull; ${moveText}
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:0.6rem;">
+          ${statsBtn}
+          <div class="score-badge">${escapeHtml(m.score)}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function openMatchReport(matchId) {
+  const m = state.matches.find(x => x.id === matchId);
+  if (!m || !m.detailedStats) return;
+
+  const sW = m.detailedStats.byPlayerId[m.winnerId] || createEmptyPlayerStats();
+  const sL = m.detailedStats.byPlayerId[m.loserId] || createEmptyPlayerStats();
+  const cW = (m.detailedStats.coachEvalByPlayerId && m.detailedStats.coachEvalByPlayerId[m.winnerId]) || createEmptyCoachEval();
+  const cL = (m.detailedStats.coachEvalByPlayerId && m.detailedStats.coachEvalByPlayerId[m.loserId]) || createEmptyCoachEval();
+  const dW = computeDerivedMetrics(sW);
+  const dL = computeDerivedMetrics(sL);
+  const r = m.detailedStats.rallies || { r0_4: 0, r5_9: 0, r9plus: 0 };
+
+  document.getElementById('reportTitle').textContent = `${m.winnerName} def. ${m.loserName} (${m.score})`;
+  document.getElementById('reportSub').textContent = `Played on ${m.date} • Match Statistics & Coach Evaluation`;
+
+  const coachCardsHtml = `
+    <div class="stats-section-title" style="margin-top:0;">Coach 4-Pillar Evaluation</div>
+    <div class="coach-pillars-grid" style="margin-bottom:1.25rem;">
+      ${[
+        { name: m.winnerName + " (Winner)", color: "var(--primary)", ev: cW },
+        { name: m.loserName, color: "var(--blue)", ev: cL }
+      ].map(item => `
+        <div class="coach-player-card">
+          <h4 style="color:${item.color};">${escapeHtml(item.name)}</h4>
+          ${COACH_THEMES.map(th => `
+            <div style="padding:0.4rem 0; border-bottom:1px dashed var(--border);">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:0.84rem; font-weight:600;">${escapeHtml(th.label)}</span>
+                ${renderRatingBadge(item.ev[th.key], false)}
+              </div>
+              ${renderObservedTagsForTheme(item.ev, th)}
+            </div>
+          `).join('')}
+          ${item.ev.note ? `<div style="margin-top:0.55rem; font-size:0.82rem; color:var(--text); background:white; padding:0.45rem 0.6rem; border-radius:0.4rem; border:1px solid var(--border);"><strong>Note:</strong> ${escapeHtml(item.ev.note)}</div>` : ''}
+        </div>
+      `).join('')}
+    </div>
+  `;
+
+  const rows = [
+    { label: "Total Points Won", a: sW.pointsWon, b: sL.pointsWon, fmtA: sW.pointsWon, fmtB: sL.pointsWon },
+    { label: "1st Serve %", a: dW.firstServePct || 0, b: dL.firstServePct || 0, fmtA: dW.firstServePct !== null ? `${dW.firstServePct}% (${sW.firstServeIn}/${dW.totalServes})` : "—", fmtB: dL.firstServePct !== null ? `${dL.firstServePct}% (${sL.firstServeIn}/${dL.totalServes})` : "—" },
+    { label: "1st Serve Points Won %", a: dW.firstServeWinPct || 0, b: dL.firstServeWinPct || 0, fmtA: dW.firstServeWinPct !== null ? `${dW.firstServeWinPct}% (${sW.firstServePtsWon}/${sW.firstServeIn})` : "—", fmtB: dL.firstServeWinPct !== null ? `${dL.firstServeWinPct}% (${sL.firstServePtsWon}/${sL.firstServeIn})` : "—" },
+    { label: "2nd Serve Points Won %", a: dW.secondServeWinPct || 0, b: dL.secondServeWinPct || 0, fmtA: dW.secondServeWinPct !== null ? `${dW.secondServeWinPct}% (${sW.secondServePtsWon}/${dW.secondServesPlayed})` : "—", fmtB: dL.secondServeWinPct !== null ? `${dL.secondServeWinPct}% (${sL.secondServePtsWon}/${dL.secondServesPlayed})` : "—" },
+    { label: "Aces", a: sW.aces, b: sL.aces, fmtA: sW.aces, fmtB: sL.aces },
+    { label: "Double Faults", a: sW.doubleFaults, b: sL.doubleFaults, fmtA: sW.doubleFaults, fmtB: sL.doubleFaults },
+    { label: "Winners", a: sW.winners, b: sL.winners, fmtA: sW.winners, fmtB: sL.winners },
+    { label: "Unforced Errors", a: sW.unforcedErrors, b: sL.unforcedErrors, fmtA: sW.unforcedErrors, fmtB: sL.unforcedErrors },
+    { label: "Forced Errors Induced", a: sW.forcedErrors, b: sL.forcedErrors, fmtA: sW.forcedErrors, fmtB: sL.forcedErrors },
+    { label: "Net Points Won", a: sW.netPointsWon, b: sL.netPointsWon, fmtA: `${sW.netPointsWon}/${dW.netTotal}${dW.netWinPct !== null ? ' (' + dW.netWinPct + '%)' : ''}`, fmtB: `${sL.netPointsWon}/${dL.netTotal}${dL.netWinPct !== null ? ' (' + dL.netWinPct + '%)' : ''}` },
+    { label: "Break Points Won", a: sW.breakPointsWon, b: sL.breakPointsWon, fmtA: `${sW.breakPointsWon}/${dW.bpTotal}${dW.bpPct !== null ? ' (' + dW.bpPct + '%)' : ''}`, fmtB: `${sL.breakPointsWon}/${dL.bpTotal}${dL.bpPct !== null ? ' (' + dL.bpPct + '%)' : ''}` }
+  ];
+
+  let barsHtml = coachCardsHtml + `
+    <div class="stats-section-title">Match Statistics Comparison</div>
+    <div style="display:flex; justify-content:space-between; font-weight:700; margin-bottom:0.85rem; padding-bottom:0.5rem; border-bottom:1px solid var(--border);">
+      <span style="color:var(--primary);">● ${escapeHtml(m.winnerName)} (Winner)</span>
+      <span style="color:var(--blue);">${escapeHtml(m.loserName)} ●</span>
+    </div>
+  `;
+
+  for (const row of rows) {
+    const sum = row.a + row.b;
+    const pctA = sum > 0 ? Math.round((row.a / sum) * 100) : 50;
+    const pctB = 100 - pctA;
+    barsHtml += `
+      <div class="comp-row">
+        <div class="comp-labels">
+          <span>${row.fmtA}</span>
+          <span style="color:var(--muted); font-weight:500;">${row.label}</span>
+          <span>${row.fmtB}</span>
+        </div>
+        <div class="comp-bar-bg">
+          <div class="comp-bar-a" style="width:${pctA}%"></div>
+          <div class="comp-bar-b" style="width:${pctB}%"></div>
+        </div>
+      </div>
+    `;
+  }
+
+  const totalRallies = r.r0_4 + r.r5_9 + r.r9plus;
+  barsHtml += `
+    <div class="stats-section-title" style="margin-top:1.25rem;">Rally Length Distribution (${totalRallies} Tracked Rallies)</div>
+    <div class="stat-grid" style="margin-top:0.5rem;">
+      <div class="stat-box"><div class="stat-val">${r.r0_4}</div><div class="stat-lbl">0–4 Shots</div></div>
+      <div class="stat-box"><div class="stat-val">${r.r5_9}</div><div class="stat-lbl">5–9 Shots</div></div>
+      <div class="stat-box"><div class="stat-val">${r.r9plus}</div><div class="stat-lbl">9+ Shots</div></div>
+    </div>
+  `;
+
+  document.getElementById('reportBody').innerHTML = barsHtml;
+  document.getElementById('matchReportModal').classList.add('open');
+}
+
+/* ================= PLAYER PROFILE & CAREER STATS HISTORY ================= */
+function switchPlayerModalTab(tab) {
+  document.getElementById('pTabCoach').classList.toggle('active', tab === 'coach');
+  document.getElementById('pTabCareer').classList.toggle('active', tab === 'career');
+  document.getElementById('pTabMatches').classList.toggle('active', tab === 'matches');
+  document.getElementById('modalCoachPane').style.display = tab === 'coach' ? 'block' : 'none';
+  document.getElementById('modalCareerPane').style.display = tab === 'career' ? 'block' : 'none';
+  document.getElementById('modalMatchesPane').style.display = tab === 'matches' ? 'block' : 'none';
+}
+
+function openPlayerModal(playerId) {
+  const idx = state.ladder.findIndex(p => p.id === playerId);
+  if (idx === -1) return;
+  const p = state.ladder[idx];
+  const rank = idx + 1;
+  const career = getCareerStats(p.id);
+  const diff = p.initialRank - rank;
+
+  document.getElementById('modalName').textContent = `#${rank} ${p.name}`;
+  document.getElementById('modalMeta').textContent = `Born ${p.year} • WTN ${p.wtn} • Initial Seed #${p.initialRank}`;
+
+  document.getElementById('modalTopStats').innerHTML = `
+    <div class="stat-box"><div class="stat-val">#${rank}</div><div class="stat-lbl">Current Rank</div></div>
+    <div class="stat-box"><div class="stat-val">${career.avgOppWtn || '—'}</div><div class="stat-lbl">Avg Opp WTN</div></div>
+    <div class="stat-box"><div class="stat-val">${career.wins}W – ${career.losses}L</div><div class="stat-lbl">Record</div></div>
+    <div class="stat-box"><div class="stat-val">${career.coachHistory.length}</div><div class="stat-lbl">Coach Evals</div></div>
+  `;
+
+  document.getElementById('modalTrackLiveBtn').onclick = () => {
+    closeModal('playerModal');
+    liveDraft = createEmptyLiveDraft();
+    liveDraft.playerAId = String(p.id);
+    saveLiveDraft();
+    switchTab('tracker');
+  };
+  document.getElementById('modalRecordWinBtn').onclick = () => {
+    closeModal('playerModal');
+    switchTab('record');
+    populateQuickSelects(p.id, null);
+  };
+  document.getElementById('modalRecordLossBtn').onclick = () => {
+    closeModal('playerModal');
+    switchTab('record');
+    populateQuickSelects(null, p.id);
+  };
+
+  // Coach Theme History Pane
+  const coachPane = document.getElementById('modalCoachPane');
+  if (career.coachHistory.length === 0) {
+    coachPane.innerHTML = `<p style="color:var(--muted); font-size:0.88rem;">No coach theme evaluations recorded yet for ${escapeHtml(p.name)}. Click <strong>⏱ Track Live Match</strong> above to evaluate Technical, Tactical, Mental, and Physical themes during a match.</p>`;
+  } else {
+    const summaryBoxes = COACH_THEMES.map(th => {
+      const c = career.coachCounts[th.key];
+      return `
+        <div class="stat-box" style="text-align:left; padding:0.7rem;">
+          <div style="font-weight:700; font-size:0.86rem; margin-bottom:0.35rem;">${th.label}</div>
+          <div style="font-size:0.76rem; color:var(--primary); font-weight:600;">Excellent: ${c.excellent}</div>
+          <div style="font-size:0.76rem; color:#b45309; font-weight:600;">Good enough: ${c.good}</div>
+          <div style="font-size:0.76rem; color:var(--danger); font-weight:600;">Needs impr.: ${c.needs}</div>
+        </div>
+      `;
+    }).join('');
+
+    const timelineHtml = career.coachHistory.map(item => `
+      <div class="match-item" style="flex-direction:column; align-items:stretch;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.4rem;">
+          <div>
+            <span class="delta ${item.won ? 'delta-up' : 'delta-down'}">${item.won ? 'WIN' : 'LOSS'}</span>
+            <strong style="margin-left:0.35rem;">vs ${escapeHtml(item.opponent)}</strong>
+            <span style="font-size:0.8rem; color:var(--muted); margin-left:0.35rem;">(${escapeHtml(item.date)} • ${escapeHtml(item.score)})</span>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="closeModal('playerModal'); openMatchReport(${item.matchId})">Full Match Report</button>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(145px, 1fr)); gap:0.4rem; margin-top:0.35rem;">
+          ${COACH_THEMES.map(th => `
+            <div style="background:#f8fafc; border:1px solid var(--border); border-radius:0.4rem; padding:0.4rem 0.55rem; font-size:0.78rem;">
+              <div style="color:var(--muted); font-weight:600; margin-bottom:0.2rem;">${escapeHtml(th.label)}</div>
+              ${renderRatingBadge(item.eval[th.key], true)}
+              ${renderObservedTagsForTheme(item.eval, th)}
+            </div>
+          `).join('')}
+        </div>
+        ${item.eval.note ? `<div style="font-size:0.8rem; color:var(--text); background:#fffbeb; border:1px solid #fde68a; border-radius:0.4rem; padding:0.4rem 0.6rem; margin-top:0.25rem;"><strong>Coach Note:</strong> ${escapeHtml(item.eval.note)}</div>` : ''}
+      </div>
+    `).join('');
+
+    coachPane.innerHTML = `
+      <div class="stats-section-title">Theme Rating Distribution (${career.coachHistory.length} Evaluated Matches)</div>
+      <div class="stat-grid">${summaryBoxes}</div>
+      <div class="stats-section-title">Match-by-Match Coach Evaluation History</div>
+      ${timelineHtml}
+    `;
+  }
+
+  // Career Stats Pane
+  const careerPane = document.getElementById('modalCareerPane');
+  if (career.matchesWithStats === 0) {
+    careerPane.innerHTML = `<p style="color:var(--muted); font-size:0.88rem;">No detailed match stats tracked yet for ${escapeHtml(p.name)}.</p>`;
+  } else {
+    const a = career.agg;
+    const d = career.derived;
+    const r = career.rallies;
+    careerPane.innerHTML = `
+      <div class="stats-section-title">Career Serve Totals (${career.matchesWithStats} Tracked Matches)</div>
+      <div class="stat-grid">
+        <div class="stat-box"><div class="stat-val">${d.firstServePct !== null ? d.firstServePct + '%' : '—'}</div><div class="stat-lbl">1st Serve In (${a.firstServeIn}/${d.totalServes})</div></div>
+        <div class="stat-box"><div class="stat-val">${d.firstServeWinPct !== null ? d.firstServeWinPct + '%' : '—'}</div><div class="stat-lbl">1st Serve Won (${a.firstServePtsWon}/${a.firstServeIn})</div></div>
+        <div class="stat-box"><div class="stat-val">${d.secondServeWinPct !== null ? d.secondServeWinPct + '%' : '—'}</div><div class="stat-lbl">2nd Serve Won (${a.secondServePtsWon}/${d.secondServesPlayed})</div></div>
+        <div class="stat-box"><div class="stat-val">${a.aces} / ${a.doubleFaults}</div><div class="stat-lbl">Aces / Double Faults</div></div>
+      </div>
+
+      <div class="stats-section-title">Career Shotmaking, Net & Break Points</div>
+      <div class="stat-grid">
+        <div class="stat-box"><div class="stat-val">${a.winners}</div><div class="stat-lbl">Total Winners</div></div>
+        <div class="stat-box"><div class="stat-val">${a.unforcedErrors}</div><div class="stat-lbl">Unforced Errors</div></div>
+        <div class="stat-box"><div class="stat-val">${a.forcedErrors}</div><div class="stat-lbl">Forced Errors Induced</div></div>
+        <div class="stat-box"><div class="stat-val">${a.netPointsWon}/${d.netTotal}</div><div class="stat-lbl">Net Points Won (${d.netWinPct !== null ? d.netWinPct + '%' : '—'})</div></div>
+        <div class="stat-box"><div class="stat-val">${a.breakPointsWon}/${d.bpTotal}</div><div class="stat-lbl">Break Points (${d.bpPct !== null ? d.bpPct + '%' : '—'})</div></div>
+        <div class="stat-box"><div class="stat-val">${a.pointsWon}</div><div class="stat-lbl">Total Points Won</div></div>
+      </div>
+
+      <div class="stats-section-title">Rally Length Exposure (Across Tracked Matches)</div>
+      <div class="stat-grid">
+        <div class="stat-box"><div class="stat-val">${r.r0_4}</div><div class="stat-lbl">0–4 Shots</div></div>
+        <div class="stat-box"><div class="stat-val">${r.r5_9}</div><div class="stat-lbl">5–9 Shots</div></div>
+        <div class="stat-box"><div class="stat-val">${r.r9plus}</div><div class="stat-lbl">9+ Shots</div></div>
+      </div>
+    `;
+  }
+
+  // Match Log Pane
+  const pMatches = state.matches.filter(m => m.winnerId === p.id || m.loserId === p.id);
+  const matchesPane = document.getElementById('modalMatchesPane');
+  if (!pMatches.length) {
+    matchesPane.innerHTML = '<p style="color:var(--muted); font-size:0.88rem;">No matches played yet.</p>';
+  } else {
+    matchesPane.innerHTML = pMatches.map(m => {
+      const won = m.winnerId === p.id;
+      let perMatchSummary = '';
+      if (m.detailedStats && m.detailedStats.byPlayerId[p.id]) {
+        const ms = m.detailedStats.byPlayerId[p.id];
+        const md = computeDerivedMetrics(ms);
+        perMatchSummary = `<div style="font-size:0.78rem; color:var(--muted); margin-top:0.2rem;">1st Srv: ${md.firstServePct !== null ? md.firstServePct + '%' : '—'} • Aces: ${ms.aces} • W/UE: ${ms.winners}/${ms.unforcedErrors} • Net: ${ms.netPointsWon}/${md.netTotal}</div>`;
+      }
+      const viewReportBtn = m.detailedStats
+        ? `<button class="btn btn-outline btn-sm" onclick="closeModal('playerModal'); openMatchReport(${m.id})">Report</button>`
+        : '';
+
+      return `
+        <div class="match-item">
+          <div>
+            <span class="delta ${won ? 'delta-up' : 'delta-down'}">${won ? 'WIN' : 'LOSS'}</span>
+            <span style="margin-left:0.4rem; font-weight:600;">vs ${escapeHtml(won ? m.loserName : m.winnerName)}</span>
+            <span style="font-size:0.8rem; color:var(--muted); margin-left:0.4rem;">(${escapeHtml(m.date)})</span>
+            ${perMatchSummary}
+          </div>
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            ${viewReportBtn}
+            <div class="score-badge">${escapeHtml(m.score)}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  switchPlayerModalTab('coach');
+  document.getElementById('playerModal').classList.add('open');
+}
+
+function closeModal(modalId) {
+  document.getElementById(modalId).classList.remove('open');
+}
+
+/* ================= MANAGE & BACKUP ================= */
+function addPlayer(e) {
+  e.preventDefault();
+  const name = document.getElementById('newPlayerName').value.trim();
+  const year = Number(document.getElementById('newPlayerYear').value);
+  const wtn = document.getElementById('newPlayerWtn').value.trim();
+  if (!name || !year || !wtn) return;
+
+  const maxId = state.ladder.reduce((m, p) => Math.max(m, p.id), 0);
+  const newRank = state.ladder.length + 1;
+  state.ladder.push({ id: maxId + 1, name, year, wtn, initialRank: newRank });
+  saveState();
+  e.target.reset();
+  switchTab('standings');
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `tennis-ladder-coach-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+}
+
+function importData(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(reader.result);
+      if (Array.isArray(parsed.ladder) && Array.isArray(parsed.matches)) {
+        state = parsed;
+        saveState();
+        renderStandings();
+        alert('Ladder, match stats & coach evaluations backup imported successfully!');
+      } else {
+        alert('Invalid backup file format.');
+      }
+    } catch (err) {
+      alert('Could not parse JSON file.');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function resetLadder() {
+  if (!confirm('Reset all standings and clear all recorded matches, stats & coach evaluations back to the initial 74 players?')) return;
+  state = {
+    ladder: JSON.parse(JSON.stringify(INITIAL_PLAYERS)),
+    matches: []
+  };
+  liveDraft = createEmptyLiveDraft();
+  saveState();
+  saveLiveDraft();
+  renderStandings();
+}
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, s => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[s]));
+}
+
+// Init
+document.getElementById('dateInput').value = new Date().toISOString().slice(0, 10);
+renderStandings();
+populateQuickSelects();
+</script>
+</body>
+</html>
